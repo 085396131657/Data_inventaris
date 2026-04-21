@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Inventaris Sekolah</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+body { font-family: Arial; background: #eef2f7; margin: 0; }
+
+.header {
+  background: #2c3e50;
+  color: white;
+  padding: 15px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.container {
+  max-width: 1100px;
+  margin: 20px auto;
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 20px;
+}
+
+.form-row { display: flex; align-items: center; }
+
+.form-row label {
+  width: 130px;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.form-row input, .form-row select {
+  flex: 1;
+  padding: 7px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.full { grid-column: span 2; }
+
+.btn-group { margin-top: 15px; display: flex; gap: 10px; }
+
+button {
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  color: white;
+  font-weight: bold;
+}
+
+.btn-save { background: #27ae60; }
+.btn-edit { background: #f39c12; }
+.btn-delete { background: #e74c3c; }
+.btn-reset { background: #7f8c8d; }
+
+table {
+  width: 100%;
+  margin-top: 20px;
+  border-collapse: collapse;
+}
+
+th { background: #2c3e50; color: white; }
+
+th, td {
+  padding: 10px;
+  border: 1px solid #ddd;
+  text-align: center;
+}
+
+tr:hover { background: #f1f1f1; cursor: pointer; }
+
+.selected { background: #d0ebff !important; }
+</style>
+</head>
+
+<body>
+
+<div class="header">📦 APLIKASI INVENTARIS SEKOLAH SMAN 9 LUTIM</div>
+
+<div class="container">
+
+<div class="form-grid">
+<div class="form-row"><label>Nama</label><input id="nama"></div>
+<div class="form-row"><label>Jenis</label><input id="jenis"></div>
+
+<div class="form-row"><label>Merk</label><input id="merk"></div>
+<div class="form-row"><label>Bahan</label><input id="bahan"></div>
+
+<div class="form-row"><label>Tahun</label><input id="tahun" type="number"></div>
+<div class="form-row"><label>Tanggal</label><input id="tanggal" type="date"></div>
+
+<div class="form-row"><label>Jumlah</label><input id="jumlah" type="number"></div>
+
+<div class="form-row">
+<label>Kondisi</label>
+<select id="kondisi">
+<option>Baik</option>
+<option>Rusak Ringan</option>
+<option>Rusak Berat</option>
+</select>
+</div>
+
+<div class="form-row full">
+<label>Keterangan</label>
+<input id="keterangan">
+</div>
+</div>
+
+<div class="btn-group">
+<button class="btn-save" onclick="simpan()"><i class="fa fa-save"></i>Simpan</button>
+<button class="btn-edit" onclick="updateData()"><i class="fa fa-edit"></i>Update</button>
+<button class="btn-delete" onclick="hapusData()"><i class="fa fa-trash"></i>Hapus</button>
+<button class="btn-reset" onclick="resetForm()"><i class="fa fa-times"></i>Batal</button>
+</div>
+
+<table>
+<thead>
+<tr>
+<th>No</th>
+<th>Nama</th>
+<th>Jenis</th>
+<th>Merk</th>
+<th>Bahan</th>
+<th>Tahun</th>
+<th>Tanggal</th>
+<th>Jumlah</th>
+<th>Kondisi</th>
+<th>Keterangan</th>
+</tr>
+</thead>
+<tbody id="tabel"></tbody>
+</table>
+
+</div>
+
+<script>
+const URL = "https://script.google.com/macros/s/AKfycbxiPxXDkWcb7zRn2102iLG8TvTrIepNYWKguZlIV8-YkugtYVcF6I1N1uFTBLdyQ9NcvQ/exec";
+
+let dataGlobal = [];
+let selectedIndex = null;
+
+// LOAD DATA
+function loadData(){
+ fetch(URL)
+ .then(res=>res.json())
+ .then(data=>{
+  dataGlobal = data;
+  tampilkan();
+ });
+}
+
+// TAMPILKAN
+function tampilkan(){
+ let t=document.getElementById("tabel");
+ t.innerHTML="";
+
+ dataGlobal.forEach((d,i)=>{
+  let row=t.insertRow();
+  row.onclick=()=>pilih(i);
+
+  row.innerHTML=`
+  <td>${i+1}</td>
+  <td>${d.nama}</td>
+  <td>${d.jenis}</td>
+  <td>${d.merk}</td>
+  <td>${d.bahan}</td>
+  <td>${d.tahun}</td>
+  <td>${d.tanggal}</td>
+  <td>${d.jumlah}</td>
+  <td>${d.kondisi}</td>
+  <td>${d.keterangan}</td>
+  `;
+ });
+}
+
+// PILIH
+function pilih(i){
+ selectedIndex=i;
+
+ document.querySelectorAll("tbody tr").forEach(r=>r.classList.remove("selected"));
+ document.querySelectorAll("tbody tr")[i].classList.add("selected");
+
+ tampilForm(dataGlobal[i]);
+}
+
+// TAMPILKAN KE FORM
+function tampilForm(d){
+ nama.value=d.nama;
+ jenis.value=d.jenis;
+ merk.value=d.merk;
+ bahan.value=d.bahan;
+ tahun.value=d.tahun;
+ tanggal.value=d.tanggal;
+ jumlah.value=d.jumlah;
+ kondisi.value=d.kondisi;
+ keterangan.value=d.keterangan;
+}
+
+// SIMPAN
+function simpan(){
+
+ let data={
+  action:"add",
+  nama:nama.value,
+  jenis:jenis.value,
+  merk:merk.value,
+  bahan:bahan.value,
+  tahun:tahun.value,
+  tanggal:tanggal.value,
+  jumlah:jumlah.value,
+  kondisi:kondisi.value,
+  keterangan:keterangan.value
+ };
+
+ dataGlobal.push({...data,row:dataGlobal.length+2});
+ tampilkan();
+
+ fetch(URL,{
+  method:"POST",
+  mode:"no-cors",
+  body:JSON.stringify(data)
+ });
+
+ tampilForm(data);
+ selectedIndex=dataGlobal.length-1;
+}
+
+// UPDATE
+function updateData(){
+ if(selectedIndex==null) return alert("Pilih data!");
+
+ let data={
+  action:"edit",
+  row:dataGlobal[selectedIndex].row,
+  nama:nama.value,
+  jenis:jenis.value,
+  merk:merk.value,
+  bahan:bahan.value,
+  tahun:tahun.value,
+  tanggal:tanggal.value,
+  jumlah:jumlah.value,
+  kondisi:kondisi.value,
+  keterangan:keterangan.value
+ };
+
+ dataGlobal[selectedIndex]=data;
+ tampilkan();
+
+ fetch(URL,{
+  method:"POST",
+  mode:"no-cors",
+  body:JSON.stringify(data)
+ });
+}
+
+// HAPUS
+function hapusData(){
+ if(selectedIndex==null) return alert("Pilih data!");
+
+ if(confirm("Hapus data?")){
+  let row=dataGlobal[selectedIndex].row;
+
+  dataGlobal.splice(selectedIndex,1);
+  tampilkan();
+
+  fetch(URL,{
+   method:"POST",
+   mode:"no-cors",
+   body:JSON.stringify({action:"delete",row:row})
+  });
+
+  resetForm();
+ }
+}
+
+// RESET
+function resetForm(){
+ document.querySelectorAll("input").forEach(i=>i.value="");
+ selectedIndex=null;
+}
+
+loadData();
+</script>
+
+</body>
+</html>
